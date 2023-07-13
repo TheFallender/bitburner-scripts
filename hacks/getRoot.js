@@ -1,7 +1,9 @@
 /** @typedef {import('../lib').NS} NS */
+/** @typedef {import('../lib').Singularity} Singularity */
 
 import { Arguments, KeywordArgument, KEYWORD_FLAGS } from './utils/args';
 import { getPortHackers, hackPorts } from './hacks/portHack.js';
+import { getScannedServers } from './utils/getServers';
 
 /**
  * Get root access to a server
@@ -28,6 +30,13 @@ export function getRoot(ns, server) {
     return true;
 }
 
+export async function installBackdoor (ns, server) {
+    if (!ns.getServer(server).backdoorInstalled) {
+        ns.tprintf(`Installing backdoor on ${server}`)
+        ns.installBackdoor(server);
+    }
+}
+
 // Arguments list
 const keywordsList = [
     new KeywordArgument(
@@ -36,7 +45,21 @@ const keywordsList = [
         'The server that should be hacked.',
         KEYWORD_FLAGS.REQUIRED,
         KEYWORD_FLAGS.PAIR
-    )
+    ),
+    new KeywordArgument(
+        ['-b', '--backdoor'],
+        'backdoor',
+        'Install a backdoor on the server.',
+        KEYWORD_FLAGS.NOT_REQUIRED,
+        KEYWORD_FLAGS.NO_PAIR
+    ),
+    new KeywordArgument(
+        ['--all', '--all-servers'],
+        'allServers',
+        'Hack all the servers.',
+        KEYWORD_FLAGS.NOT_REQUIRED,
+        KEYWORD_FLAGS.NO_PAIR
+    ),
 ];
 
 
@@ -49,11 +72,16 @@ export async function main(ns) {
     const keywordArgs = new Arguments(ns, keywordsList);
     if (!keywordArgs.valid) return;
 
+    // Server to hack
+    let servers = keywordArgs.args.allServers ? getScannedServers(ns) : [keywordArgs.args.server];
+
     // Get the servers commands
-    if (keywordArgs.args.server) {
-        if (getRoot(ns, keywordArgs.args.server))
-            ns.tprintf(`Gained access to ${keywordArgs.args.server}`);
-        else
-            ns.tprintf(`Could not gain access to ${keywordArgs.args.server}`)
-    }
+    servers.forEach((server) => {
+        if (getRoot(ns, server)) {
+            ns.tprintf(`Gained access to ${server}`);
+            if (keywordArgs.args.backdoor)
+                installBackdoor(ns, server);
+        } else
+            ns.tprintf(`Could not gain access to ${server}`)
+    });
 }
