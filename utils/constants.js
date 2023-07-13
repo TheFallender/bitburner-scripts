@@ -6,6 +6,7 @@ export const homeServers = 'hserver';
 
 // Hack Related
 export const hackScript = 'hacks/hack.js';
+export const propagateScript = 'hacks/propagate.js';
 export const portHackersData = {
     SSH: 'BruteSSH.exe',
     FTP: 'FTPCrack.exe',
@@ -22,4 +23,4 @@ export const portHackers = [
 ];
 
 // Tools Related
-export const ramToLeave = 24;
+export const ramToLeave = 128;
