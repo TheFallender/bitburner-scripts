@@ -80,7 +80,7 @@ export class Arguments {
             }
 
             // Check if the argument is help
-            if (foundArg.keywords === this.help.keywords) {
+            if (this.help.keywords[0] === foundArg.keywords[0]) {
                 this.valid = false;
                 this.printUsage('Command usage:\n');
                 break;
@@ -135,7 +135,7 @@ export class Arguments {
         this.tprintf(reason);
         // Print the usage
         this.keywordsList.forEach((argument) => {
-            const keywords = argument.variants.join(', ');
+            const keywords = argument.keywords.join(', ');
             const pairString = argument.pair ?  ` = VALUE` : '';
             this.tprintf(`    ${keywords}${pairString}\n\t${argument.description}\n`);
         });
