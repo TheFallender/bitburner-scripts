@@ -145,15 +145,15 @@ export async function main(ns) {
     const keywordArgs = new Arguments(ns, keywordsList);
     if (!keywordArgs.valid) return;
 
+    // Set origin to default
+    if (keywordArgs.args.origin === undefined) {
+        keywordArgs.args.origin = homeNode;
+    }
+   
     // Check if the server is the same as the origin
     if (keywordArgs.args.server === keywordArgs.args.origin) {
         ns.tprintf(`Server ${keywordArgs.args.server} is the same as ${keywordArgs.args.origin}.`);
         return;
-    }
-
-    // Set origin to default
-    if (keywordArgs.args.origin === undefined) {
-        keywordArgs.args.origin = homeNode;
     }
 
     // Check if the server exists
