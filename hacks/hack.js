@@ -8,7 +8,7 @@ import { getTargetServers } from './utils/getServers';
  */
 export async function main(ns) {
     // Get the list of targets
-    let targets = getTargetServers(ns);
+    let targets = refreshTargets(ns);
 
     // Infinitely hack at random the targets available
     for (
@@ -19,7 +19,7 @@ export async function main(ns) {
         // See if we need to refresh the list of targets
         if (++iterations >= 10) {
             iterations = -1;
-            targets = getTargetServers(ns);
+            targets = refreshTargets(ns);
         }
 
         // Get target
@@ -37,4 +37,24 @@ export async function main(ns) {
         else
             await ns.hack(target);
     }
+}
+
+function refreshTargets(ns) {
+    let targets = getTargetServers(ns);
+
+    // Find the average max money
+    let avgMaxMoney = 0;
+    targets.forEach((target) => {
+        avgMaxMoney += ns.getServerMaxMoney(target);
+    });
+    avgMaxMoney /= targets.length;
+    avgMaxMoney /= 5;
+
+    // Find the targets that are interesting
+    targets = targets.filter((target) => {
+       if (ns.getServerMaxMoney(target) > avgMaxMoney)
+           return true;
+    });
+
+    return targets;
 }
