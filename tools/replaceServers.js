@@ -1,8 +1,8 @@
 /** @typedef {import('../lib').NS} NS */
 
-import { homeNode, homeServers } from './utils/constants';
+import { homeServers } from './utils/constants';
 import { Arguments, KeywordArgument, KEYWORD_FLAGS } from './utils/args';
-import { getOwnedServers } from './utils/getServers';
+import { getSuffixOfCost } from './utils/moneySuffix';
 
 // Arguments list
 const keywordsList = [
@@ -34,6 +34,13 @@ const keywordsList = [
         KEYWORD_FLAGS.NOT_REQUIRED,
         KEYWORD_FLAGS.PAIR,
     ),
+    new KeywordArgument(
+        ['-m', '--cost', '--money'],
+        'moneyCost',
+        'The money cost of the upgrade to the servers.',
+        KEYWORD_FLAGS.NOT_REQUIRED,
+        KEYWORD_FLAGS.NO_PAIR
+    )
 ];
 
 /** @param {NS} ns */
@@ -43,12 +50,16 @@ export async function main(ns) {
     if (!keywordArgs.valid) return;
 
     // Servers limit
-    const maxServers = 25;
+    const maxServers = ns.getPurchasedServerLimit();
 
-    // Get the list of targets
-    let servers = getOwnedServers(ns).filter((server) => {
-        return server !== homeNode;
-    });
+    // Get the list of purchased servers
+    let servers = ns.getPurchasedServers()
+
+    // Adapt ram to closest power of 2
+    if (keywordArgs.args.ram && keywordArgs.args.ram > 0)
+        keywordArgs.args.ram = 2 ** Math.round(Math.log2(keywordArgs.args.ram));
+    else if (keywordArgs.args.ram === 0)
+        keywordArgs.args.ram = null;
 
     // Rename the servers
     if (keywordArgs.args.rename) {
@@ -59,15 +70,30 @@ export async function main(ns) {
             ns.renamePurchasedServer(servers[i], serverName);
             ns.tprintf(`Renamed ${servers[i]} to ${serverName}`);
         }
+    } else if (keywordArgs.args.servers && keywordArgs.args.moneyCost) {
+        var totalCost = 0;
+        servers.forEach((server) => {
+            const serverRam = ns.getServerMaxRam(server);
+            if (serverRam < keywordArgs.args.ram)
+                totalCost += ns.getPurchasedServerCost(keywordArgs.args.ram);
+        });
+        const costToUpgrade = totalCost;
+        for (let i = servers.length; i < keywordArgs.args.servers && i < maxServers; i++)
+            totalCost += ns.getPurchasedServerCost(keywordArgs.args.ram);
+        ns.tprintf(`Total cost: ${getSuffixOfCost(totalCost)}`);
+        ns.tprintf(`Cost to upgrade: ${getSuffixOfCost(costToUpgrade)}`);
+        ns.tprintf(`Cost to buy: ${getSuffixOfCost(totalCost - costToUpgrade)}`);
     } else if (keywordArgs.args.servers && keywordArgs.args.ram) {        
         // Delete the servers we don't need
-        servers.forEach((server) => {
+        servers = servers.filter((server) => {
             const serverRam = ns.getServerMaxRam(server);
             if (serverRam < keywordArgs.args.ram) {
                 ns.killall(server, false);
                 ns.deleteServer(server);
                 ns.tprintf(`Deleted ${server} with ${serverRam}GB of RAM. It was ${keywordArgs.args.ram - serverRam}GB too small.`);
+                return false;
             }
+            return true;
         });
 
         // Add the servers we need
