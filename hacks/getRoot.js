@@ -10,7 +10,7 @@ import { getScannedServers } from './utils/getServers';
  * @param {NS} ns
  * @param {string} server
  * @returns {boolean}
-*/
+ */
 export function getRoot(ns, server) {
     // Check if it needs to be hacked
     if (!ns.hasRootAccess(server)) {
@@ -66,7 +66,7 @@ const keywordsList = [
 /**
  * Do the port operations
  * @param {NS} ns
-*/
+ */
 export async function main(ns) {
     // Get the arguments
     const keywordArgs = new Arguments(ns, keywordsList);

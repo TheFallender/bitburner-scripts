@@ -7,7 +7,7 @@ import { Arguments, KeywordArgument, KEYWORD_FLAGS } from './utils/args';
  * Get the servers list
  * @param {NS} ns 
  * @returns {string[]}
-*/
+ */
 export function getScannedServers(ns) {
     // Servers scanned and not scanned
     let listOfScannedServers = [homeNode];
@@ -50,7 +50,7 @@ export function getTargetServers(ns) {
  * Get the servers that we have already hacked
  * @param {NS} ns 
  * @returns {string[]}
-*/
+ */
 export function getHackedServers(ns) {
     return getScannedServers(ns).filter((server) => {
         return ns.hasRootAccess(server);
@@ -61,7 +61,7 @@ export function getHackedServers(ns) {
  * Get the servers that have yet to be hacked
  * @param {NS} ns 
  * @returns {string[]}
-*/
+ */
 export function getUnhackedServers(ns) {
     return getScannedServers(ns).filter((server) => {
         return !ns.hasRootAccess(server);
@@ -72,7 +72,7 @@ export function getUnhackedServers(ns) {
  * Get the servers that we own
  * @param {NS} ns 
  * @returns {string[]}
-*/
+ */
 export function getOwnedServers(ns) {
     return getScannedServers(ns).filter((server) => {
         return ns.hasRootAccess(server) &&
@@ -122,7 +122,7 @@ const keywordsList = [
 /** 
  * Get the server list
  * @param {NS} ns
-*/
+ */
 export async function main(ns) {
     // Get the arguments
     const keywordArgs = new Arguments(ns, keywordsList);
