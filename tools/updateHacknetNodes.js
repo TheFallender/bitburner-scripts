@@ -1,6 +1,7 @@
 /** @typedef {import('../lib').NS} NS */
 
 import { Arguments, KeywordArgument, KEYWORD_FLAGS } from './utils/args';
+import { getSuffixOfCost } from './utils/moneySuffix';
 
 // Keyword list
 const keywordsList = [
@@ -111,23 +112,4 @@ export async function main(ns) {
             printCostStr = 'Upgrade Cost of the current servers ' + getSuffixOfCost(upgradeCost);
         ns.tprintf(printCostStr);
     }
-}
-
-function getSuffixOfCost(cost) {
-    const dictionaryOfSuffixes = {
-        0: '',
-        1: 'k',
-        2: 'm',
-        3: 'b'
-    }
-
-    let suffix = 0;
-    while (cost > 1000) {
-        cost /= 1000;
-        suffix++;
-    }
-
-    cost = Math.round(cost * 1000) / 1000;
-
-    return "$" + cost + dictionaryOfSuffixes[suffix];
 }
