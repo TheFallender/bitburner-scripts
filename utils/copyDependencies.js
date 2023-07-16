@@ -9,7 +9,7 @@ import { Arguments, KeywordArgument, KEYWORD_FLAGS } from './utils/args';
  * @param {string} serverOrigin
  * @param {string} serverDestination
  * @returns {boolean}
-*/
+ */
 export function copyDependencies(ns, scriptToCopy, serverOrigin, serverDestination, imports = []) {
     imports = getDeepImports(ns, scriptToCopy);
 
@@ -73,7 +73,7 @@ export function getDeepImports(ns, scriptToCopy) {
  * @param {string} serverOrigin
  * @param {string} serverDestination
  * @returns {boolean}
-*/
+ */
 function deepCopyScript (ns, scriptToCopy, serverOrigin, serverDestination) {
     // Copy the dependencies
     if (copyDependencies(ns, scriptToCopy, serverOrigin, serverDestination))
@@ -116,7 +116,7 @@ const keywordsList = [
 /** 
  * Get the server list
  * @param {NS} ns
-*/
+ */
 export async function main(ns) {
     // Get the arguments
     const keywordArgs = new Arguments(ns, keywordsList);

@@ -32,7 +32,7 @@ const keywordsList = [
 /** 
  * Clean the scripts from the servers
  * @param {NS} ns
-*/
+ */
 export async function main(ns) {
     // Get the arguments
     const keywordArgs = new Arguments(ns, keywordsList);

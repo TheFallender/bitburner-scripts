@@ -6,7 +6,7 @@ import { homeNode, portHackers, portHackersData } from './utils/constants';
  * Gets the port hackers available
  * @param {NS} ns
  * @returns {string[]}
-*/
+ */
 export function getPortHackers(ns) {
     return portHackers.filter((portHacker) => {
         return ns.fileExists(portHacker, homeNode);
@@ -18,7 +18,7 @@ export function getPortHackers(ns) {
  * @param {NS} ns
  * @param {string} server
  * @returns {string[]}
-*/
+ */
 export function hackPorts(ns, server) {
     getPortHackers(ns).forEach((portHacker) => {
         switch (portHacker) {

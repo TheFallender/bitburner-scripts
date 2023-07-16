@@ -5,7 +5,7 @@ import { getTargetServers } from './utils/getServers';
 /** 
  * Main hacking function
  * @param {NS} ns 
-*/
+ */
 export async function main(ns) {
     // Get the list of targets
     let targets = getTargetServers(ns);
