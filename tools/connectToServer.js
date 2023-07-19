@@ -99,7 +99,7 @@ export function getShortestPath(ns, originServer, destinationServer) {
             if (nodesAtDepth[j].server === destinationServer) {
                 let path = [];
                 let currentNode = nodesAtDepth[j];
-                while (currentNode !== null) {
+                while (currentNode.server !== originServer) {
                     path.push(currentNode.server);
                     currentNode = currentNode.parent;
                 }
@@ -157,8 +157,11 @@ export async function main(ns) {
     }
 
     // Check if the server exists
-    if (!ns.serverExists(keywordArgs.args.server) || !ns.serverExists(keywordArgs.args.origin)) {
+    if (!ns.serverExists(keywordArgs.args.server)) {
         ns.tprintf(`Server ${keywordArgs.args.server} does not exist.`);
+        return;
+    } else if (!ns.serverExists(keywordArgs.args.origin)) {
+        ns.tprintf(`Server ${keywordArgs.args.origin} does not exist.`);
         return;
     }
 

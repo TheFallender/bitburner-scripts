@@ -53,13 +53,19 @@ export async function main(ns) {
     const maxServers = ns.getPurchasedServerLimit();
 
     // Get the list of purchased servers
-    let servers = ns.getPurchasedServers()
+    let servers = ns.getPurchasedServers();
 
     // Adapt ram to closest power of 2
     if (keywordArgs.args.ram && keywordArgs.args.ram > 0)
         keywordArgs.args.ram = 2 ** Math.round(Math.log2(keywordArgs.args.ram));
     else if (keywordArgs.args.ram === 0)
         keywordArgs.args.ram = null;
+
+    // Check if the ram is more than the max
+    if (keywordArgs.args.ram > ns.getPurchasedServerMaxRam()) {
+        ns.tprintf(`Cannot buy servers with more than ${ns.getPurchasedServerMaxRam()}GB of RAM.`);
+        return;
+    }
 
     // Rename the servers
     if (keywordArgs.args.rename) {
