@@ -26,19 +26,28 @@ export async function main(ns) {
         const target = targets[i];
 
         // Thresholds for grow/weaken
-        let moneyThresh = ns.getServerMaxMoney(target) * 0.75;
+        let moneyThresh = ns.getServerMaxMoney(target) * 0.6;
         let securityThresh = ns.getServerMinSecurityLevel(target) + 5;
+
+        // ns.tprintf(`Hacking ${target} with:`)
+        // ns.tprintf(`\t- security: ${formatNum(ns.getServerSecurityLevel(target))}/${formatNum(ns.getServerMinSecurityLevel(target) + 5)} => ${ns.getServerSecurityLevel(target) < securityThresh}`)
+        // ns.tprintf(`\t- money: ${formatNum(ns.getServerMoneyAvailable(target))}/${formatNum(ns.getServerMaxMoney(target) * 0.6)} => ${ns.getServerMoneyAvailable(target) >= moneyThresh}`)
 
         // Decide what to do with the server
         if (ns.getServerSecurityLevel(target) > securityThresh)
             await ns.weaken(target);
-        else if (ns.getServerMoneyAvailable(target) < moneyThresh)
+        else if (ns.getServerMoneyAvailable(target) < moneyThresh &&
+                ns.getPlayer().money > ns.getServerMoneyAvailable(target))
             await ns.grow(target);
         else
             await ns.hack(target);
     }
 }
 
+/** 
+ * Refresh the list of targets
+ * @param {NS} ns 
+ */
 function refreshTargets(ns) {
     let targets = getTargetServers(ns);
 
@@ -49,6 +58,7 @@ function refreshTargets(ns) {
     });
     avgMaxMoney /= targets.length;
     avgMaxMoney /= 5;
+    
 
     // Find the targets that are interesting
     targets = targets.filter((target) => {
@@ -57,4 +67,11 @@ function refreshTargets(ns) {
     });
 
     return targets;
+}
+
+
+function formatNum (num, decimals = 2) {
+    if (!Number.isInteger(num))
+        num = num.toFixed(decimals);
+    return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
 }

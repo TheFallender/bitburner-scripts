@@ -69,6 +69,14 @@ export async function main(ns) {
     }
 }
 
+/** 
+ * Propagate and run the hack script to all the servers
+ * @param {NS} ns 
+ * @param {string} server
+ * @param {string} fileToSpread
+ * @param {number} hackScriptRamUse
+ * @param {string[]} imports
+ */
 function runOnMachine(ns, server, fileToSpread, hackScriptRamUse, imports) {
     // Kill all scripts
     ns.killall(server, true);
@@ -85,17 +93,41 @@ function runOnMachine(ns, server, fileToSpread, hackScriptRamUse, imports) {
     const serverRam = ns.getServerMaxRam(server);
 
     // Get the instances available
-    let scriptInstancesAvailable = 
-        Math.floor(
-            (serverRam - (server === homeNode ? ramToLeave : 0))
-        / hackScriptRamUse);
+    let scriptInstancesAvailable = Math.floor(serverRam / hackScriptRamUse);
+    if (server === homeNode) {
+        let ramLeft = ramToLeave;
+        if (ramLeft > serverRam) {
+            ramLeft = serverRam / 4;
+        }
+        ramLeft += ns.getScriptRam(propagateScript);
+        scriptInstancesAvailable = Math.floor((serverRam - ramLeft) / hackScriptRamUse);
+    }
 
+    // Check if we have enough ram
     if (scriptInstancesAvailable < 1) {
-        ns.tprintf(`Not enough ram on ${server} to run ${fileToSpread}`);
+        ns.tprintf(`${server} - Not enough ram to run ${fileToSpread}`);
         return;
     }
 
-    // Run the script
-    ns.tprintf(`Running ${fileToSpread} on ${server} with ${scriptInstancesAvailable} instances.`);
-    ns.exec(fileToSpread, server, scriptInstancesAvailable);
+    // Thread split
+    const threadSplit = 100;
+
+    // Print thread usage
+    ns.tprintf(`${server} - Running ${fileToSpread} with ${scriptInstancesAvailable} instances.`);
+    if (scriptInstancesAvailable >= threadSplit) {
+        if (scriptInstancesAvailable >= (threadSplit * 2))
+            ns.tprintf(`\t- ${Math.floor(scriptInstancesAvailable / threadSplit) - 1} batches of ${threadSplit} threads.`);
+        if (scriptInstancesAvailable % threadSplit !== 0)
+            ns.tprintf(`\t- ${(scriptInstancesAvailable % threadSplit) + threadSplit} extra threads.`);
+    }
+
+    // Run batches of threadSplit instances
+    for (;scriptInstancesAvailable > 0; scriptInstancesAvailable -= threadSplit) {
+        let threads = threadSplit;
+        if (scriptInstancesAvailable < (threadSplit * 2)) {
+            threads = scriptInstancesAvailable;
+            scriptInstancesAvailable = 0;
+        }
+        ns.exec(fileToSpread, server, threads);
+    }
 }
