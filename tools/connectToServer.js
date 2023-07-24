@@ -96,7 +96,7 @@ export function getShortestPath(ns, originServer, destinationServer) {
     for (let i = 0; i < depth; i++) {
         nodesAtDepth = tree.getNodesAtDepth(i);
         for (let j = 0; j < nodesAtDepth.length; j++) {
-            if (nodesAtDepth[j].server === destinationServer) {
+            if (nodesAtDepth[j].server.includes(destinationServer)) {
                 let path = [];
                 let currentNode = nodesAtDepth[j];
                 while (currentNode.server !== originServer) {
