@@ -3,6 +3,7 @@
 
 import { homeNode } from './utils/constants';
 import { Arguments, KeywordArgument, KEYWORD_FLAGS } from './utils/args';
+import { getScannedServers } from './utils/getServers';
 
 // Tree node
 class TreeNode {
@@ -95,16 +96,16 @@ export function getShortestPath(ns, originServer, destinationServer) {
     let shortestPath = [];
     for (let i = 0; i < depth; i++) {
         nodesAtDepth = tree.getNodesAtDepth(i);
-        for (let j = 0; j < nodesAtDepth.length; j++) {
-            if (nodesAtDepth[j].server.includes(destinationServer)) {
-                let path = [];
-                let currentNode = nodesAtDepth[j];
-                while (currentNode.server !== originServer) {
-                    path.push(currentNode.server);
-                    currentNode = currentNode.parent;
-                }
-                shortestPath = path.reverse();
+        let serversAtDepth = nodesAtDepth.map((node) => node.server);
+        const serverIndex = serverListIndex(serversAtDepth, destinationServer);
+        if (serverIndex !== -1) {
+            let path = [];
+            let currentNode = nodesAtDepth[serverIndex];
+            while (currentNode.server !== originServer) {
+                path.push(currentNode.server);
+                currentNode = currentNode.parent;
             }
+            shortestPath = path.reverse();
         }
     }
 
@@ -156,15 +157,35 @@ export async function main(ns) {
         return;
     }
 
+    const serverList = getScannedServers(ns);
+
     // Check if the server exists
-    if (!ns.serverExists(keywordArgs.args.server)) {
+    if (serverListIndex(serverList, keywordArgs.args.server) === -1) {
         ns.tprintf(`Server ${keywordArgs.args.server} does not exist.`);
         return;
-    } else if (!ns.serverExists(keywordArgs.args.origin)) {
+    } else if (serverListIndex(serverList, keywordArgs.args.origin) === -1) {
         ns.tprintf(`Server ${keywordArgs.args.origin} does not exist.`);
         return;
     }
 
     // Get the connect string
     ns.tprintf(getShortestPath(ns, keywordArgs.args.origin, keywordArgs.args.server));
+}
+
+/**
+ * Check if a server is in a list, return -1 if not
+ * @param {string[]} list
+ * @param {string} server
+ * @returns {int}
+ */
+function serverListIndex (list, server) {
+    // lowercase
+    server = server.toLowerCase();
+    list = list.map((server) => server.toLowerCase());
+    
+    for (let i = 0; i < list.length; i++) {
+        if (list[i] === server) 
+            return i;
+    }
+    return -1;
 }
